@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { 
   ArrowLeft, ArrowRight, ZoomIn, ZoomOut, 
-  SquareSelect, Pencil, Tag, Share, Download, 
+  Square, Pencil, Tag, Share, Download, 
   Check, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -207,7 +206,7 @@ const ImageDetail: React.FC = () => {
           >
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="object">
-                <SquareSelect className="h-4 w-4 mr-2" />
+                <Square className="h-4 w-4 mr-2" />
                 Object
               </TabsTrigger>
               <TabsTrigger value="segment">
@@ -231,7 +230,7 @@ const ImageDetail: React.FC = () => {
                         size="sm" 
                         className="h-10 annotation-tool bg-primary/5"
                       >
-                        <SquareSelect className="h-4 w-4" />
+                        <Square className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="outline" 
