@@ -8,6 +8,7 @@ import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import DataLake from "./pages/DataLake";
 import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
 import ImageDetail from "./pages/ImageDetail";
 import NotFound from "./pages/NotFound";
 
@@ -24,8 +25,9 @@ const App = () => (
             <Route index element={<Dashboard />} />
             <Route path="data-lake" element={<DataLake />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="projects/:projectId" element={<ProjectDetail />} />
           </Route>
-          <Route path="/projects/:id/images/:imageId" element={<ImageDetail />} />
+          <Route path="/projects/:projectId/images/:imageId" element={<ImageDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

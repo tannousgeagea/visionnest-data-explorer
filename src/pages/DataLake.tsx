@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Filter, ArrowDown, ArrowUp, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImageCard from "@/components/common/ImageCard";
-import TagBadge from "@/components/common/TagBadge";
+import { toast } from "@/components/ui/use-toast";
 
 // Mock data
 const mockImages = [
@@ -22,7 +23,8 @@ const mockImages = [
     src: "https://images.unsplash.com/photo-1487958449943-2429e8be8625",
     tags: ["traffic", "urban", "intersection"],
     source: "API",
-    date: "2025-05-06"
+    date: "2025-05-06",
+    projectId: "1"
   },
   {
     id: "2",
@@ -54,7 +56,8 @@ const mockImages = [
     src: "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b",
     tags: ["retail", "store", "analytics"],
     source: "Edge Box",
-    date: "2025-05-02"
+    date: "2025-05-02",
+    projectId: "1"
   },
   {
     id: "6",
@@ -90,12 +93,24 @@ const allTags = Array.from(
 // Available sources
 const sources = ["API", "Upload", "Edge Box"];
 
+// Mock projects for assignment
+const mockProjectOptions = [
+  { id: "1", name: "Traffic Analysis" },
+  { id: "2", name: "Product Defect Detection" },
+  { id: "3", name: "Wildlife Monitoring System" },
+  { id: "4", name: "Retail Analytics" },
+  { id: "5", name: "Facial Recognition Demo" },
+];
+
 const DataLake: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterSource, setFilterSource] = useState<string | undefined>(undefined);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  
+  const navigate = useNavigate();
 
   const toggleImageSelection = (id: string) => {
     setSelectedImages(prev => 
@@ -125,6 +140,42 @@ const DataLake: React.FC = () => {
     setSearchTerm("");
     setFilterSource(undefined);
     setFilterTags([]);
+  };
+  
+  const handleImageClick = (image: typeof mockImages[0]) => {
+    // If the image has a project ID, navigate to the image detail within that project
+    if (image.projectId) {
+      navigate(`/projects/${image.projectId}/images/${image.id}`);
+    } else {
+      // Show a toast notifying that this image isn't in a project yet
+      toast({
+        title: "Image not in a project",
+        description: "Add this image to a project to view and annotate it.",
+        duration: 3000,
+      });
+    }
+  };
+  
+  const handleAddToProject = () => {
+    if (selectedImages.length === 0 || !selectedProject) {
+      toast({
+        title: "Selection required",
+        description: "Please select images and a project first.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    toast({
+      title: "Images added to project",
+      description: `Added ${selectedImages.length} image(s) to ${mockProjectOptions.find(p => p.id === selectedProject)?.name}`,
+      duration: 3000,
+    });
+    
+    // Clear selection after adding
+    setSelectedImages([]);
+    setSelectedProject("");
   };
   
   // Filter and sort images
@@ -253,9 +304,28 @@ const DataLake: React.FC = () => {
         </div>
         
         {selectedImages.length > 0 && (
-          <div className="space-x-3">
-            <Button variant="outline" size="sm">Add Tags</Button>
-            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">Delete</Button>
+          <div className="flex space-x-3 items-center">
+            <Select value={selectedProject} onValueChange={setSelectedProject}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Add to project..." />
+              </SelectTrigger>
+              <SelectContent>
+                {mockProjectOptions.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleAddToProject} 
+              disabled={!selectedProject}
+            >
+              Add to Project
+            </Button>
+            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+              Delete
+            </Button>
           </div>
         )}
       </div>
@@ -271,7 +341,13 @@ const DataLake: React.FC = () => {
             tags={image.tags}
             source={image.source}
             selected={selectedImages.includes(image.id)}
-            onClick={() => toggleImageSelection(image.id)}
+            onClick={() => {
+              if (selectedImages.length > 0) {
+                toggleImageSelection(image.id);
+              } else {
+                handleImageClick(image);
+              }
+            }}
           />
         ))}
       </div>

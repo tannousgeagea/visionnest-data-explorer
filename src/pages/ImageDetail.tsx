@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, ArrowRight, ZoomIn, ZoomOut, 
   Square, Pencil, Tag, Share, Download, 
@@ -17,38 +19,62 @@ import {
 } from "@/components/ui/select";
 import TagBadge from "@/components/common/TagBadge";
 
-// Mock data for the current image
-const currentImage = {
-  id: "1",
-  name: "traffic_cam_01_20250508.jpg",
-  src: "https://images.unsplash.com/photo-1487958449943-2429e8be8625",
-  tags: ["traffic", "urban", "intersection", "pedestrian", "vehicles"],
-  source: "API",
-  date: "2025-05-06",
-  metadata: {
-    resolution: "1920x1080",
-    size: "2.4 MB",
-    format: "JPEG",
-    captureDate: "2025-05-08 09:15:22",
-    device: "AXIS Q1785-LE",
-    location: "Main St & 5th Ave"
-  },
-  annotations: [
-    { 
-      id: "box1", 
-      type: "box", 
-      label: "car", 
-      coordinates: { x: 30, y: 50, width: 120, height: 80 },
-      color: "#3b82f6" 
+// Mock data - in a real app this would be fetched based on projectId and imageId
+const mockImageDetails = {
+  "1": {
+    "1": {
+      id: "1",
+      name: "traffic_cam_01_20250508.jpg",
+      src: "https://images.unsplash.com/photo-1487958449943-2429e8be8625",
+      tags: ["traffic", "urban", "intersection", "pedestrian", "vehicles"],
+      source: "API",
+      date: "2025-05-06",
+      metadata: {
+        resolution: "1920x1080",
+        size: "2.4 MB",
+        format: "JPEG",
+        captureDate: "2025-05-08 09:15:22",
+        device: "AXIS Q1785-LE",
+        location: "Main St & 5th Ave"
+      },
+      annotations: [
+        { 
+          id: "box1", 
+          type: "box", 
+          label: "car", 
+          coordinates: { x: 30, y: 50, width: 120, height: 80 },
+          color: "#3b82f6" 
+        },
+        { 
+          id: "box2", 
+          type: "box", 
+          label: "pedestrian", 
+          coordinates: { x: 200, y: 100, width: 40, height: 80 },
+          color: "#10b981" 
+        }
+      ]
     },
-    { 
-      id: "box2", 
-      type: "box", 
-      label: "pedestrian", 
-      coordinates: { x: 200, y: 100, width: 40, height: 80 },
-      color: "#10b981" 
+    "5": {
+      id: "5",
+      name: "retail_analytics_store_15.jpg",
+      src: "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b",
+      tags: ["retail", "store", "analytics"],
+      source: "Edge Box",
+      date: "2025-05-02",
+      metadata: {
+        resolution: "1280x720",
+        size: "1.8 MB",
+        format: "PNG",
+        captureDate: "2025-05-02 15:22:10",
+        device: "Canon EOS R5",
+        location: "Retail Store #15"
+      },
+      annotations: []
     }
-  ]
+  },
+  "2": {
+    // Project 2 images would be here
+  }
 };
 
 // Available annotation classes
@@ -58,10 +84,19 @@ const annotationClasses = [
 ];
 
 const ImageDetail: React.FC = () => {
+  const { projectId, imageId } = useParams<{ projectId: string; imageId: string }>();
+  const navigate = useNavigate();
+  
   const [activeTab, setActiveTab] = useState("object");
   const [zoom, setZoom] = useState(100);
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
-  const [tags, setTags] = useState<string[]>(currentImage.tags);
+  
+  // Get the image data
+  const currentImage = projectId && imageId && 
+    mockImageDetails[projectId as keyof typeof mockImageDetails]?.[imageId];
+    
+  const tags = currentImage?.tags || [];
+  const [imageTagList, setImageTagList] = useState<string[]>(tags);
   const [newTag, setNewTag] = useState("");
   
   const handleZoomIn = () => {
@@ -73,12 +108,12 @@ const ImageDetail: React.FC = () => {
   };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setImageTagList(prevTags => prevTags.filter(tag => tag !== tagToRemove));
   };
 
   const addTag = () => {
-    if (newTag && !tags.includes(newTag)) {
-      setTags([...tags, newTag]);
+    if (newTag && !imageTagList.includes(newTag)) {
+      setImageTagList([...imageTagList, newTag]);
       setNewTag("");
     }
   };
@@ -86,27 +121,49 @@ const ImageDetail: React.FC = () => {
   const selectAnnotation = (id: string) => {
     setSelectedAnnotation(id === selectedAnnotation ? null : id);
   };
+  
+  const handleNavigateToPreviousImage = () => {
+    // In a real app, this would navigate to the previous image in the sequence
+    navigate(`/projects/${projectId}`);
+  };
+  
+  const handleNavigateToNextImage = () => {
+    // In a real app, this would navigate to the next image in the sequence
+    navigate(`/projects/${projectId}`);
+  };
+  
+  if (!currentImage) {
+    return (
+      <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-semibold mb-2">Image Not Found</h2>
+        <p className="text-muted-foreground mb-4">The image you're looking for doesn't exist.</p>
+        {projectId && (
+          <Button onClick={() => navigate(`/projects/${projectId}`)}>
+            Back to Project
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col animate-fade-in">
       {/* Top bar */}
       <div className="border-b p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <a href="/projects/1">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Project
-            </a>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${projectId}`)}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Project
           </Button>
           <h1 className="text-lg font-medium">{currentImage.name}</h1>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleNavigateToPreviousImage}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Previous
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleNavigateToNextImage}>
             Next
             <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
@@ -325,7 +382,7 @@ const ImageDetail: React.FC = () => {
                   <div>
                     <h3 className="text-sm font-medium mb-2">Image Tags</h3>
                     <div className="flex flex-wrap gap-2">
-                      {tags.map(tag => (
+                      {imageTagList.map(tag => (
                         <TagBadge 
                           key={tag} 
                           tag={tag} 
@@ -333,7 +390,7 @@ const ImageDetail: React.FC = () => {
                         />
                       ))}
                     </div>
-                    {tags.length === 0 && (
+                    {imageTagList.length === 0 && (
                       <p className="text-sm text-muted-foreground">No tags added yet</p>
                     )}
                   </div>

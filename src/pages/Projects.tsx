@@ -1,5 +1,5 @@
-
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +82,7 @@ const mockProjects = [
 
 const Projects: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   
   // Filter projects based on search
   const filterProjects = (projects: typeof mockProjects, term: string) => {
@@ -102,6 +103,11 @@ const Projects: React.FC = () => {
   // Filter based on search term
   const filteredActive = filterProjects(activeProjects, searchTerm);
   const filteredArchived = filterProjects(archivedProjects, searchTerm);
+
+  // Handle project click
+  const handleProjectClick = (projectId: string) => {
+    navigate(`/projects/${projectId}`);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -147,7 +153,7 @@ const Projects: React.FC = () => {
                   tags={project.tags}
                   thumbnails={project.thumbnails}
                   lastUpdated={new Date(project.lastUpdated).toLocaleDateString()}
-                  onClick={() => {}}
+                  onClick={() => handleProjectClick(project.id)}
                 />
               ))}
             </div>
@@ -180,7 +186,7 @@ const Projects: React.FC = () => {
                   tags={project.tags}
                   thumbnails={project.thumbnails}
                   lastUpdated={new Date(project.lastUpdated).toLocaleDateString()}
-                  onClick={() => {}}
+                  onClick={() => handleProjectClick(project.id)}
                   className="opacity-80"
                 />
               ))}
