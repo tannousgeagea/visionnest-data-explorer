@@ -1,9 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { mockImages, mockProjectOptions, sources } from "@/data/mockImages";
+import { fetchImages, ImageQueryParams } from "@/services/ImageService";
 import SearchFilter from "@/components/dataLake/SearchFilter";
 import SourceFilter from "@/components/dataLake/SourceFilter";
 import SortControl from "@/components/dataLake/SortControl";
@@ -11,8 +13,9 @@ import TagFilter from "@/components/dataLake/TagFilter";
 import SelectionHeader from "@/components/dataLake/SelectionHeader";
 import ImageGrid from "@/components/dataLake/ImageGrid";
 import NoResults from "@/components/dataLake/NoResults";
+import { Loader } from "lucide-react";
 
-// Available tags from all images
+// Extract all tags from mock images for initial loading
 const allTags = Array.from(
   new Set(mockImages.flatMap(img => img.tags))
 ).sort();
@@ -24,8 +27,41 @@ const DataLake: React.FC = () => {
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedProject, setSelectedProject] = useState<string>("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   
   const navigate = useNavigate();
+
+  // Debounce search term to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Prepare query parameters
+  const queryParams: ImageQueryParams = {
+    name: debouncedSearchTerm || undefined,
+    source: filterSource,
+    // Handle multiple tag filters by using the first one (backend only supports one tag filter)
+    tag: filterTags.length > 0 ? filterTags[0] : undefined,
+  };
+
+  // Fetch images with React Query
+  const { 
+    data: imageResponse, 
+    isLoading, 
+    isError 
+  } = useQuery({
+    queryKey: ['images', queryParams],
+    queryFn: () => fetchImages(queryParams),
+  });
+
+  // Clear selected images when filters change
+  useEffect(() => {
+    setSelectedImages([]);
+  }, [debouncedSearchTerm, filterSource, filterTags]);
 
   const toggleImageSelection = (id: string) => {
     setSelectedImages(prev => 
@@ -36,10 +72,11 @@ const DataLake: React.FC = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedImages.length === filteredImages.length) {
+    const displayedImages = imageResponse?.data || [];
+    if (selectedImages.length === displayedImages.length) {
       setSelectedImages([]);
     } else {
-      setSelectedImages(filteredImages.map(img => img.id));
+      setSelectedImages(displayedImages.map(img => img.id));
     }
   };
 
@@ -93,32 +130,11 @@ const DataLake: React.FC = () => {
     setSelectedProject("");
   };
   
-  // Filter and sort images
-  let filteredImages = [...mockImages];
+  // Get displayed images from API response or use empty array if loading/error
+  const displayedImages = imageResponse?.data || [];
   
-  // Apply search filter
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    filteredImages = filteredImages.filter(
-      img => img.name.toLowerCase().includes(term) || 
-             img.tags.some(tag => tag.toLowerCase().includes(term))
-    );
-  }
-  
-  // Apply source filter
-  if (filterSource && filterSource !== "all") {
-    filteredImages = filteredImages.filter(img => img.source === filterSource);
-  }
-  
-  // Apply tag filters
-  if (filterTags.length > 0) {
-    filteredImages = filteredImages.filter(img => 
-      filterTags.every(tag => img.tags.includes(tag))
-    );
-  }
-  
-  // Apply sorting
-  filteredImages.sort((a, b) => {
+  // Apply sorting (we still need to sort client-side)
+  const sortedImages = [...displayedImages].sort((a, b) => {
     return sortOrder === "asc"
       ? new Date(a.date).getTime() - new Date(b.date).getTime()
       : new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -164,7 +180,7 @@ const DataLake: React.FC = () => {
       {/* Selection header */}
       <SelectionHeader
         selectedImages={selectedImages}
-        filteredImages={filteredImages}
+        filteredImages={sortedImages}
         toggleSelectAll={toggleSelectAll}
         selectedProject={selectedProject}
         setSelectedProject={setSelectedProject}
@@ -172,16 +188,32 @@ const DataLake: React.FC = () => {
         handleAddToProject={handleAddToProject}
       />
 
-      {/* Images grid */}
-      {filteredImages.length > 0 ? (
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center p-12">
+          <Loader className="animate-spin h-8 w-8 mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading images...</p>
+        </div>
+      )}
+
+      {/* Error state */}
+      {isError && !isLoading && (
+        <div className="text-center p-12">
+          <p className="text-destructive font-medium mb-2">Failed to load images</p>
+          <p className="text-muted-foreground">Using mock data as fallback</p>
+        </div>
+      )}
+
+      {/* Images grid or no results */}
+      {!isLoading && sortedImages.length > 0 ? (
         <ImageGrid 
-          images={filteredImages} 
+          images={sortedImages} 
           selectedImages={selectedImages} 
           onImageClick={handleImageClick}
           toggleImageSelection={toggleImageSelection}
         />
       ) : (
-        <NoResults onClearFilters={handleClearFilters} />
+        !isLoading && <NoResults onClearFilters={handleClearFilters} />
       )}
     </div>
   );

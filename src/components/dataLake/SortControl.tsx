@@ -9,10 +9,14 @@ interface SortControlProps {
 }
 
 const SortControl: React.FC<SortControlProps> = ({ sortOrder, setSortOrder }) => {
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
   return (
     <Button
       variant="outline"
-      onClick={() => setSortOrder(prev => (prev === "asc" ? "desc" : "asc"))}
+      onClick={toggleSortOrder}
     >
       Date {sortOrder === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />}
     </Button>

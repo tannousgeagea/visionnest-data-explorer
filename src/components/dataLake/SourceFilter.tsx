@@ -19,8 +19,16 @@ const SourceFilter: React.FC<SourceFilterProps> = ({
   setFilterSource, 
   sources 
 }) => {
+  // Handle the selection change
+  const handleValueChange = (value: string) => {
+    setFilterSource(value === "all" ? undefined : value);
+  };
+
   return (
-    <Select value={filterSource} onValueChange={setFilterSource}>
+    <Select 
+      value={filterSource || "all"} 
+      onValueChange={handleValueChange}
+    >
       <SelectTrigger>
         <SelectValue placeholder="Filter by source" />
       </SelectTrigger>
