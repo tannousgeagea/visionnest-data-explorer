@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Filter, ArrowDown, ArrowUp, Search } from "lucide-react";
@@ -240,7 +239,7 @@ const DataLake: React.FC = () => {
               <SelectValue placeholder="Filter by source" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Sources</SelectItem>
+              <SelectItem value="all">All Sources</SelectItem>
               {sources.map(source => (
                 <SelectItem key={source} value={source}>{source}</SelectItem>
               ))}
