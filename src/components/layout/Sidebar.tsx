@@ -22,11 +22,7 @@ const Sidebar: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">V</div>
           <span className="ml-3 text-xl font-semibold text-sidebar-foreground">VisionNest</span>
         </div>
-        <SidebarTrigger asChild>
-          <button className="ml-auto hover:bg-sidebar-accent rounded-full p-1">
-            <ChevronLeft className="h-5 w-5 text-sidebar-foreground" />
-          </button>
-        </SidebarTrigger>
+        <SidebarTrigger className="ml-auto hover:bg-sidebar-accent rounded-full p-1" />
       </SidebarHeader>
       
       <SidebarContent>
