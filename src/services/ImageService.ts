@@ -25,6 +25,7 @@ export interface ImageQueryParams {
   name?: string;
   source?: string;
   tag?: string;
+  additionalTags?: string[];
   limit?: number;
   offset?: number;
 }
@@ -38,11 +39,20 @@ export const fetchImages = async (params: ImageQueryParams = {}): Promise<ImageR
   try {
     // Build query string from params
     const queryParams = new URLSearchParams();
+    
+    // Add primary params
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== '') {
+      if (value !== undefined && value !== '' && key !== 'additionalTags') {
         queryParams.append(key, value.toString());
       }
     });
+    
+    // Handle additional tags (for structured queries)
+    if (params.additionalTags && params.additionalTags.length > 0) {
+      params.additionalTags.forEach(tag => {
+        queryParams.append('tag', tag);
+      });
+    }
 
     const queryString = queryParams.toString();
     const url = `/images${queryString ? `?${queryString}` : ''}`;
@@ -80,10 +90,40 @@ function createMockResponse(params: ImageQueryParams): ImageResponse {
     );
   }
   
+  // Filter by primary tag
   if (params.tag) {
-    filteredData = filteredData.filter(img => 
-      img.tags.includes(params.tag)
-    );
+    filteredData = filteredData.filter(img => {
+      // Handle structured tags (key:value format)
+      if (params.tag.includes(':')) {
+        const [key, value] = params.tag.split(':');
+        // Look for tags that start with key: and contain the value
+        return img.tags.some(tag => 
+          tag.startsWith(`${key}:`) && tag.includes(value)
+        );
+      } else {
+        // Regular tag filtering
+        return img.tags.includes(params.tag);
+      }
+    });
+  }
+  
+  // Filter by additional tags
+  if (params.additionalTags && params.additionalTags.length > 0) {
+    params.additionalTags.forEach(tagFilter => {
+      filteredData = filteredData.filter(img => {
+        // Handle structured tags (key:value format)
+        if (tagFilter.includes(':')) {
+          const [key, value] = tagFilter.split(':');
+          // Look for tags that start with key: and contain the value
+          return img.tags.some(tag => 
+            tag.startsWith(`${key}:`) && tag.includes(value)
+          );
+        } else {
+          // Regular tag filtering
+          return img.tags.includes(tagFilter);
+        }
+      });
+    });
   }
   
   // Handle pagination

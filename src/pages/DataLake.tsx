@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import SelectionHeader from "@/components/dataLake/SelectionHeader";
 import ImageGrid from "@/components/dataLake/ImageGrid";
 import NoResults from "@/components/dataLake/NoResults";
 import { Loader } from "lucide-react";
+import { parseQueryString, formatQueryAsTagParams, ParsedQuery } from "@/utils/queryParser";
 
 // Extract all tags from mock images for initial loading
 const allTags = Array.from(
@@ -28,6 +28,7 @@ const DataLake: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [parsedQuery, setParsedQuery] = useState<ParsedQuery>({});
   
   const navigate = useNavigate();
 
@@ -35,17 +36,47 @@ const DataLake: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      // Parse the search term whenever it changes
+      setParsedQuery(parseQueryString(searchTerm));
     }, 300);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Handle removing a specific filter from the search
+  const handleRemoveFilter = (key: string) => {
+    // Create a new search string without the removed filter
+    const newSearchTerms = Object.entries(parsedQuery)
+      .filter(([k]) => k !== key)
+      .map(([k, v]) => {
+        // Add quotes if the value contains spaces
+        const formattedValue = v.includes(' ') ? `"${v}"` : v;
+        return `${k}:${formattedValue}`;
+      })
+      .join(' ');
+    
+    setSearchTerm(newSearchTerms);
+  };
+
+  // Format tag filters from parsed query
+  const tagFiltersFromQuery = formatQueryAsTagParams(parsedQuery);
+  
+  // Combine text-based tag filters with UI-selected tag filters
+  const combinedTagFilters = [...filterTags, ...tagFiltersFromQuery];
+
+  // Extract text search term if present
+  const textSearchTerm = parsedQuery.text || '';
+  
   // Prepare query parameters
   const queryParams: ImageQueryParams = {
-    name: debouncedSearchTerm || undefined,
+    name: textSearchTerm || undefined,
     source: filterSource,
-    // Handle multiple tag filters by using the first one (backend only supports one tag filter)
-    tag: filterTags.length > 0 ? filterTags[0] : undefined,
+    // Use tag filters from both UI selection and structured query
+    tag: combinedTagFilters.length > 0 ? combinedTagFilters[0] : undefined,
+    // Add additional tag parameters for multi-tag filtering
+    ...(combinedTagFilters.length > 1 && {
+      additionalTags: combinedTagFilters.slice(1)
+    })
   };
 
   // Fetch images with React Query
@@ -61,7 +92,7 @@ const DataLake: React.FC = () => {
   // Clear selected images when filters change
   useEffect(() => {
     setSelectedImages([]);
-  }, [debouncedSearchTerm, filterSource, filterTags]);
+  }, [debouncedSearchTerm, filterSource, filterTags, tagFiltersFromQuery]);
 
   const toggleImageSelection = (id: string) => {
     setSelectedImages(prev => 
@@ -159,7 +190,12 @@ const DataLake: React.FC = () => {
       {/* Filters */}
       <div className="bg-card p-4 rounded-lg border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <SearchFilter searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+          <SearchFilter 
+            searchTerm={searchTerm} 
+            setSearchTerm={setSearchTerm} 
+            parsedQuery={parsedQuery}
+            onRemoveFilter={handleRemoveFilter}
+          />
           <SourceFilter 
             filterSource={filterSource} 
             setFilterSource={setFilterSource} 
