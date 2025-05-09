@@ -1,7 +1,7 @@
 
 import React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Table, Squares2X2 } from "lucide-react";
+import { Table, LayoutGrid } from "lucide-react";
 
 interface ViewToggleProps {
   view: "grid" | "table";
@@ -12,7 +12,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ view, setView }) => {
   return (
     <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "grid" | "table")}>
       <ToggleGroupItem value="grid" aria-label="Grid view">
-        <Squares2X2 className="h-4 w-4" />
+        <LayoutGrid className="h-4 w-4" />
         <span className="ml-2 hidden md:inline">Grid</span>
       </ToggleGroupItem>
       <ToggleGroupItem value="table" aria-label="Table view">
