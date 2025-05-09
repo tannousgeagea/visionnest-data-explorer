@@ -72,6 +72,32 @@ export const fetchImages = async (params: ImageQueryParams = {}): Promise<ImageR
   }
 };
 
+// Helper function to check if a tag matches, handling structured tag formats
+function tagMatches(tagFilter: string, imageTags: string[]): boolean {
+  // Check if tagFilter has a key:value format
+  if (tagFilter.includes(':')) {
+    const [key, value] = tagFilter.split(':');
+    
+    // If the tag filter has format "tag:value", we need to check if the raw value exists in image tags
+    if (key.toLowerCase() === 'tag') {
+      return imageTags.some(tag => 
+        tag.toLowerCase() === value.toLowerCase().trim()
+      );
+    }
+    
+    // For other structured tags (key:value format), check if any tag has that key:value pair
+    return imageTags.some(tag => {
+      // Case insensitive comparison
+      return tag.toLowerCase() === tagFilter.toLowerCase().trim();
+    });
+  } 
+  
+  // For simple tags without key: prefix, just check if it exists
+  return imageTags.some(tag => 
+    tag.toLowerCase() === tagFilter.toLowerCase().trim()
+  );
+}
+
 // Helper function to filter mock data based on query params
 function createMockResponse(params: ImageQueryParams): ImageResponse {
   let filteredData = [...mockImages];
@@ -86,43 +112,19 @@ function createMockResponse(params: ImageQueryParams): ImageResponse {
   
   if (params.source) {
     filteredData = filteredData.filter(img => 
-      img.source === params.source
+      img.source.toLowerCase() === params.source?.toLowerCase()
     );
   }
   
   // Filter by primary tag
   if (params.tag) {
-    filteredData = filteredData.filter(img => {
-      // Handle structured tags (key:value format)
-      if (params.tag.includes(':')) {
-        const [key, value] = params.tag.split(':');
-        // Look for tags that start with key: and contain the value
-        return img.tags.some(tag => 
-          tag.startsWith(`${key}:`) && tag.includes(value)
-        );
-      } else {
-        // Regular tag filtering
-        return img.tags.includes(params.tag);
-      }
-    });
+    filteredData = filteredData.filter(img => tagMatches(params.tag!, img.tags));
   }
   
   // Filter by additional tags
   if (params.additionalTags && params.additionalTags.length > 0) {
     params.additionalTags.forEach(tagFilter => {
-      filteredData = filteredData.filter(img => {
-        // Handle structured tags (key:value format)
-        if (tagFilter.includes(':')) {
-          const [key, value] = tagFilter.split(':');
-          // Look for tags that start with key: and contain the value
-          return img.tags.some(tag => 
-            tag.startsWith(`${key}:`) && tag.includes(value)
-          );
-        } else {
-          // Regular tag filtering
-          return img.tags.includes(tagFilter);
-        }
-      });
+      filteredData = filteredData.filter(img => tagMatches(tagFilter, img.tags));
     });
   }
   
