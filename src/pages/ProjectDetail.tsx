@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Filter, ArrowLeft, Search, Plus, Tag } from "lucide-react";
+import { Filter, ArrowLeft, Search, Plus, Tag, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImageCard from "@/components/common/ImageCard";
 import TagBadge from "@/components/common/TagBadge";
+import ModelSummaryCard from "@/components/common/ModelSummaryCard";
 
 // Mock project data - in a real app, this would come from an API
 const mockProjects = {
@@ -177,6 +178,15 @@ const ProjectDetail: React.FC = () => {
     }
   };
 
+  const handleModelsClick = () => {
+    navigate(`/projects/${projectId}/models`);
+  };
+
+  // Mock model data (would come from an API in a real app)
+  const modelCount = 3;
+  const latestModelName = "Traffic Classifier";
+  const latestVersion = 2;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header with back button */}
@@ -202,10 +212,14 @@ const ProjectDetail: React.FC = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">Images:</span>
             <span className="ml-2 font-medium">{project.imageCount}</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Models:</span>
+            <span className="ml-2 font-medium">{modelCount}</span>
           </div>
           <div>
             <span className="text-muted-foreground">Last Updated:</span>
@@ -217,6 +231,27 @@ const ProjectDetail: React.FC = () => {
               {Math.round((project.images.filter(img => img.status === "annotated").length / project.images.length) * 100)}%
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Project overview cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <ModelSummaryCard 
+          projectId={projectId || ""} 
+          modelCount={modelCount} 
+          latestModelName={latestModelName}
+          latestVersionNumber={latestVersion}
+        />
+        
+        {/* Placeholder for other summary cards */}
+        <div className="bg-card p-6 rounded-lg border">
+          <h3 className="font-medium mb-2">Dataset Overview</h3>
+          <p className="text-muted-foreground">Image stats and distribution</p>
+        </div>
+        
+        <div className="bg-card p-6 rounded-lg border">
+          <h3 className="font-medium mb-2">Recent Activity</h3>
+          <p className="text-muted-foreground">Latest annotations and model runs</p>
         </div>
       </div>
 
@@ -283,6 +318,9 @@ const ProjectDetail: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="pending">
               Pending Review ({project.images.filter(img => img.status === "pending").length})
+            </TabsTrigger>
+            <TabsTrigger value="models" onClick={handleModelsClick}>
+              Models ({modelCount})
             </TabsTrigger>
           </TabsList>
 
