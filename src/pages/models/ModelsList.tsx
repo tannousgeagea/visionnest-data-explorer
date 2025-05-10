@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
@@ -28,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const ModelsList: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const [searchQuery, setSearchQuery] = useState("");
-  const [modelTypeFilter, setModelTypeFilter] = useState<string>("");
+  const [modelTypeFilter, setModelTypeFilter] = useState<string>("all");
 
   // Fetch models for this project
   const {
@@ -53,7 +52,7 @@ const ModelsList: React.FC = () => {
           );
 
         const matchesType =
-          modelTypeFilter === "" || model.type === modelTypeFilter;
+          modelTypeFilter === "all" || model.type === modelTypeFilter;
 
         return matchesSearch && matchesType;
       })
@@ -139,7 +138,7 @@ const ModelsList: React.FC = () => {
               <SelectValue placeholder="All model types" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All model types</SelectItem>
+              <SelectItem value="all">All model types</SelectItem>
               <SelectItem value="classification">Classification</SelectItem>
               <SelectItem value="object-detection">Object Detection</SelectItem>
               <SelectItem value="segmentation">Segmentation</SelectItem>
@@ -180,11 +179,11 @@ const ModelsList: React.FC = () => {
         <div className="text-center py-12">
           <h3 className="font-medium text-lg mb-2">No models found</h3>
           <p className="text-muted-foreground mb-6">
-            {searchQuery || modelTypeFilter
+            {searchQuery || modelTypeFilter !== "all"
               ? "Try adjusting your filters"
               : "Get started by creating your first model"}
           </p>
-          {!searchQuery && !modelTypeFilter && (
+          {!searchQuery && modelTypeFilter === "all" && (
             <Button asChild>
               <Link to={`/projects/${projectId}/models/new`}>
                 Create New Model
