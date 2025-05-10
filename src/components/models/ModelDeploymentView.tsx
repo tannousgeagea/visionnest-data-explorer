@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -16,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Layer, Settings, Play, Code, Link } from "lucide-react";
+import { Layers, Settings, Play, Code, Link } from "lucide-react";
 
 const ModelDeploymentView: React.FC<{ model: Model }> = ({ model }) => {
   const [autoDeployEnabled, setAutoDeployEnabled] = useState<boolean>(false);
@@ -61,7 +60,7 @@ const ModelDeploymentView: React.FC<{ model: Model }> = ({ model }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <h3 className="font-medium flex items-center gap-2">
-                <Layer className="h-4 w-4 text-muted-foreground" />
+                <Layers className="h-4 w-4 text-muted-foreground" />
                 Production Version
               </h3>
               {productionVersion ? (
