@@ -11,6 +11,9 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import ImageDetail from "./pages/ImageDetail";
 import NotFound from "./pages/NotFound";
+import ModelsList from "./pages/models/ModelsList";
+import ModelDetail from "./pages/models/ModelDetail";
+import ModelTraining from "./pages/models/ModelTraining";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,9 @@ const App = () => (
             <Route path="data-lake" element={<DataLake />} />
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:projectId" element={<ProjectDetail />} />
+            <Route path="projects/:projectId/models" element={<ModelsList />} />
+            <Route path="projects/:projectId/models/:modelId" element={<ModelDetail />} />
+            <Route path="projects/:projectId/models/:modelId/train" element={<ModelTraining />} />
           </Route>
           <Route path="/projects/:projectId/images/:imageId" element={<ImageDetail />} />
           <Route path="*" element={<NotFound />} />
