@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Layers, ArrowRight } from "lucide-react";
+import { Layers, ArrowRight, Database } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +10,7 @@ interface ModelSummaryCardProps {
   modelCount: number;
   latestModelName?: string;
   latestVersionNumber?: number;
+  latestDatasetName?: string;
 }
 
 const ModelSummaryCard: React.FC<ModelSummaryCardProps> = ({
@@ -17,6 +18,7 @@ const ModelSummaryCard: React.FC<ModelSummaryCardProps> = ({
   modelCount,
   latestModelName,
   latestVersionNumber,
+  latestDatasetName,
 }) => {
   return (
     <Card className="overflow-hidden">
@@ -40,6 +42,13 @@ const ModelSummaryCard: React.FC<ModelSummaryCardProps> = ({
               <p className="font-medium">
                 {latestModelName} (v{latestVersionNumber})
               </p>
+              
+              {latestDatasetName && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                  <Database className="h-3 w-3" />
+                  <span>{latestDatasetName}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -19,6 +19,13 @@ export type VersionTag =
   | 'baseline' 
   | 'experimental';
 
+export interface Dataset {
+  id: string;
+  name: string;
+  itemCount?: number;
+  createdAt?: string;
+}
+
 export interface ModelVersion {
   id: string;
   versionNumber: number;
@@ -33,6 +40,7 @@ export interface ModelVersion {
     weights?: string;
     logs?: string;
   };
+  datasetUsed?: Dataset | null;
 }
 
 export interface Model {
