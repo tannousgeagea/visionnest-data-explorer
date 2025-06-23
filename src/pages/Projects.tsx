@@ -107,10 +107,12 @@ const Projects: React.FC = () => {
 
   // Handle project click
   const handleProjectClick = (projectId: string) => {
+    console.log("Navigating to project:", projectId);
     navigate(`/projects/${projectId}`);
   };
 
   const handleCreateProject = () => {
+    console.log("Create project button clicked, navigating to /projects/new");
     navigate("/projects/new");
   };
 
