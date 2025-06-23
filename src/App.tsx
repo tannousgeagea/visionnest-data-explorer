@@ -15,6 +15,7 @@ import ModelsList from "./pages/models/ModelsList";
 import ModelDetail from "./pages/models/ModelDetail";
 import ModelTraining from "./pages/models/ModelTraining";
 import CreateProject from "./pages/CreateProject";
+import Search from "./pages/Search";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="projects/:projectId/models" element={<ModelsList />} />
             <Route path="projects/:projectId/models/:modelId" element={<ModelDetail />} />
             <Route path="projects/:projectId/models/:modelId/train" element={<ModelTraining />} />
+            <Route path="search" element={<Search />} />
           </Route>
           <Route path="/projects/:projectId/images/:imageId" element={<ImageDetail />} />
           <Route path="*" element={<NotFound />} />
