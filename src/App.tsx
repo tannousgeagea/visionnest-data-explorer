@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import ModelsList from "./pages/models/ModelsList";
 import ModelDetail from "./pages/models/ModelDetail";
 import ModelTraining from "./pages/models/ModelTraining";
+import CreateProject from "./pages/CreateProject";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route index element={<Dashboard />} />
             <Route path="data-lake" element={<DataLake />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="projects/new" element={<CreateProject />} />
             <Route path="projects/:projectId" element={<ProjectDetail />} />
             <Route path="projects/:projectId/models" element={<ModelsList />} />
             <Route path="projects/:projectId/models/:modelId" element={<ModelDetail />} />

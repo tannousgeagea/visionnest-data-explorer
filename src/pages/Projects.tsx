@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, Search } from "lucide-react";
@@ -109,6 +110,10 @@ const Projects: React.FC = () => {
     navigate(`/projects/${projectId}`);
   };
 
+  const handleCreateProject = () => {
+    navigate("/projects/new");
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -116,7 +121,7 @@ const Projects: React.FC = () => {
           <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
           <p className="text-muted-foreground mt-1">Organize and manage your visual data</p>
         </div>
-        <Button className="bg-accent hover:bg-accent/80">
+        <Button className="bg-accent hover:bg-accent/80" onClick={handleCreateProject}>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Project
         </Button>
@@ -164,7 +169,7 @@ const Projects: React.FC = () => {
                 {searchTerm ? "Try a different search term" : "Create a new project to get started"}
               </p>
               {!searchTerm && (
-                <Button className="mt-4 bg-accent hover:bg-accent/80">
+                <Button className="mt-4 bg-accent hover:bg-accent/80" onClick={handleCreateProject}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Project
                 </Button>
